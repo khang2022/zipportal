@@ -9,9 +9,9 @@ from base.log import logger
 class FileHandlerService:
     def save_file(self, uploaded_file):
         renamed_file = (
-                datetime.datetime.now().strftime("%m%d%Y%H%M%S")
-                + "_"
-                + str(uploaded_file.filename)
+            datetime.datetime.now().strftime("%m%d%Y%H%M%S")
+            + "_"
+            + str(uploaded_file.filename)
         )
         logger.info(f"Saved file with name {renamed_file}")
         path = os.path.join(os.getcwd(), "tmp")
