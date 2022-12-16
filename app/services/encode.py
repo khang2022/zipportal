@@ -1,4 +1,5 @@
 import gc
+import shutil
 import hashlib
 import os
 import dask.dataframe as dd
@@ -19,10 +20,20 @@ class EncodeService:
         a_string = str(a_string)
         return hashlib.sha256(a_string.encode("utf-8")).hexdigest()
 
+    def _moving_file(self, filename):
+        file_path = os.path.join(os.getcwd(), "tmp", filename)
+        new_dir_path = path = os.path.join(os.getcwd(), "tmp_read")
+        if not os.path.exists(new_dir_path):
+            os.makedirs(new_dir_path)
+        if os.path.exists(file_path):
+            shutil.move(file_path, new_dir_path)
+            logger.info(f"moving file {filename} from {file_path} to  {new_dir_path}")
+
     @time_benchmark
     @memory_benchmark
     def encode_csv(self, filename, hash_cols: list):
-        df = dd.read_csv(f"tmp/{filename}", blocksize="200mb")
+        self._moving_file(filename)
+        df = dd.read_csv(f"tmp_read/{filename}", blocksize="200mb")
         for i in range(df.npartitions):
             tmp = df.partitions[i]
             tmp[hash_cols] = tmp[hash_cols].applymap(self._hash_unicode)
@@ -59,7 +70,7 @@ class EncodeService:
     def remove_uploaded_file(self, file_name):
         upload_file_path_hashed = os.path.join(os.getcwd(), "tmp_hash", file_name)
         tmp_file = file_name.removeprefix("hashed_")
-        upload_file_path = os.path.join(os.getcwd(), "tmp", tmp_file)
+        upload_file_path = os.path.join(os.getcwd(), "tmp_read", tmp_file)
         if os.path.exists(upload_file_path_hashed):
             os.remove(upload_file_path_hashed)
             logger.info(f"remove file {file_name} successfully")

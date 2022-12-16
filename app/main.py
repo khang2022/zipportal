@@ -1,10 +1,13 @@
 import uvicorn
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from threading import Thread
 from base.configs import settings
 from base.log import logger
 from routers import encode_router, upload_router
+from services import file_service
+
 
 app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
@@ -21,10 +24,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# app.add_middleware(LimitUploadSize, max_upload_size=500)
+
 
 app.include_router(upload_router)
 app.include_router(encode_router)
+
+
+@app.on_event("startup")
+async def startup_event_setup():
+    thread = Thread(target=file_service.scan_expiry_files)
+    thread.start()
+
 
 if __name__ == "__main__":
     uvicorn.run(

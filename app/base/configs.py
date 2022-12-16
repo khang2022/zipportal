@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     ACCOUNT_SHARED_KEY: str
     CONTAINER_NAME: str
     FILE_LIMIT: int
+    TIME_LIMIT: int
+    ALGORITHM: str
+    ACCESS_TOKEN_SECRET: str
 
     MAX_CONCURRENCY: int
     FILE_SERVICE_BLOB_SIGNED_URL_EXPIRY_TIME: int
