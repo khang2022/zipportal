@@ -11,7 +11,10 @@ async def limit_file_size(request: Request):
         if "content-length" not in request.headers:
             raise HTTPException(status_code=status.HTTP_411_LENGTH_REQUIRED)
         content_length = int(request.headers["content-length"])
+        print(f"content_length {content_length}")
+        print(f"settings.FILE_LIMIT {settings.FILE_LIMIT}")
         if content_length > settings.FILE_LIMIT:
+            print("limit_file_size")
             raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
 
         form = await request.form()

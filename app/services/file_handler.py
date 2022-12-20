@@ -1,6 +1,5 @@
 import datetime
 import os
-import schedule
 import time
 import pandas as pd
 from base.configs import settings
@@ -58,9 +57,7 @@ class FileHandlerService:
 
     def scan_expiry_files(self):
         list_file = self._get_list_files()
-        schedule.every(1).minutes.do(self._remove_expiry_time, list_file)
-        while True:
-            schedule.run_pending()
+        self._remove_expiry_time(list_file)
 
 
 file_service = FileHandlerService()

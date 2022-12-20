@@ -9,10 +9,10 @@ router = APIRouter()
 
 
 @router.post(
-    "/upload", response_model=UploadResponse, dependencies=[Depends(limit_file_size)]
+    "/upload",
+    response_model=UploadResponse,
+    dependencies=[Depends(JWTBearer()), Depends(limit_file_size)],
 )
-async def create_upload_file(
-    uploaded_file: UploadFile = File(...), token: str = Depends(JWTBearer())
-):
+async def create_upload_file(uploaded_file: UploadFile = File(...)):
     renamed_file = file_service.save_file(uploaded_file)
     return file_service.response_file(renamed_file)
