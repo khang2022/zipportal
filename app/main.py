@@ -1,5 +1,5 @@
 import uvicorn
-import asyncio
+from fastapi_utils.tasks import repeat_every
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from threading import Thread
@@ -31,9 +31,9 @@ app.include_router(encode_router)
 
 
 @app.on_event("startup")
+@repeat_every(seconds=1 * 60)  # 1 hour
 async def startup_event_setup():
-    thread = Thread(target=file_service.scan_expiry_files)
-    thread.start()
+    file_service.scan_expiry_files()
 
 
 if __name__ == "__main__":
