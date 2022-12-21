@@ -61,7 +61,8 @@ class EncodeService:
             with open(file=upload_file_path, mode="rb") as data:
                 blob_client.upload_blob(data)
             logger.info(f"Successfully upload file {file_name} to azure storage")
-            return {"result": "upload Successful !"}
+            blob_url = settings.BLOB_STORAGE_HOST + f"/{settings.CONTAINER_NAME}/{file_name}"
+            return {"blob_url": blob_url}
 
         except Exception as e:
             logger.error(e)

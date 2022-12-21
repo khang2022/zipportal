@@ -5,12 +5,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from threading import Thread
 from base.configs import settings
 from base.log import logger
-from routers import encode_router, upload_router
+from routers import router
 from services import file_service
 
 
 app = FastAPI(
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=f"/openapi.json",
     docs_url=f"{settings.API_V1_STR}/docs",
     redoc_url=f"{settings.API_V1_STR}/redoc",
 )
@@ -26,8 +26,7 @@ app.add_middleware(
 )
 
 
-app.include_router(upload_router)
-app.include_router(encode_router)
+app.include_router(router, prefix=settings.API_V1_STR)
 
 
 @app.on_event("startup")

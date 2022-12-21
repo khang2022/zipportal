@@ -10,14 +10,14 @@ class JWTBearer:
     def __init__(self):
         ...
 
-    async def __call__(self, headers: Union[str, None] = Header(default=None)):
-        if headers:
-            payload = self.verify_jwt(headers)
+    async def __call__(self, Authorization: Union[str, None] = Header(default=None)):
+        if Authorization:
+            payload = self.verify_jwt(Authorization)
             if not payload:
                 raise HTTPException(
                     status_code=403, detail="Invalid token or expired token."
                 )
-            return headers
+            return Authorization
         else:
             raise HTTPException(status_code=403, detail="Invalid authorization code.")
 
