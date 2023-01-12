@@ -20,8 +20,7 @@ async def limit_file_size(request: Request):
         form = await request.form()
 
         allow_list = [
-            "text/csv",
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "text/csv"
         ]
         if form["uploaded_file"].content_type not in allow_list:
             raise HTTPException(415, detail="Invalid document type")

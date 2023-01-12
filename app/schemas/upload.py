@@ -1,6 +1,13 @@
-from schemas.base import BaseSchema
 from typing import List
 
 
-class UploadResponse(BaseSchema):
-    preview: dict = None
+from pydantic import BaseModel
+
+class UploadResponse(BaseModel):
+    filename: str = None
+    preview: List[dict] = None
+
+
+class EncodeRequest(BaseModel):
+    filename: str = None
+    columns: List[str] = None

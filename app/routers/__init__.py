@@ -1,7 +1,7 @@
-
-from routers.api.encode import router as encode_router
-from routers.api.upload import router as upload_router
 from fastapi import APIRouter
+
+from .encode import router as encode_router
+from .upload import router as upload_router
 
 router = APIRouter()
 

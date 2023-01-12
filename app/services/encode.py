@@ -2,8 +2,11 @@ import gc
 import shutil
 import hashlib
 import os
-import dask.dataframe as dd
+
 from azure.storage.blob import BlobServiceClient
+from dask import dataframe as dd
+from fastapi import HTTPException
+
 from base.configs import settings
 from base.log import logger
 from base.tools import time_benchmark, memory_benchmark
@@ -32,22 +35,31 @@ class EncodeService:
     @time_benchmark
     @memory_benchmark
     def encode_csv(self, filename, hash_cols: list):
-        self._moving_file(filename)
-        df = dd.read_csv(f"tmp_read/{filename}", blocksize="200mb")
-        for i in range(df.npartitions):
-            tmp = df.partitions[i]
-            tmp[hash_cols] = tmp[hash_cols].applymap(self._hash_unicode)
-            tmp.compute()
-            path = os.path.join(os.getcwd(), "tmp_hash")
-            if not os.path.exists(path):
-                os.makedirs(path)
-            new_file_name = f"hashed_{filename}"
-            tmp.to_csv(f"./tmp_hash/{new_file_name}", single_file=True, mode="a")
-            del tmp
-            gc.collect()
+        try:
+            self._moving_file(filename)
+            df = dd.read_csv(f"tmp_read/{filename}", blocksize="200mb", assume_missing=True,)
+            for i in range(df.npartitions):
+                tmp = df.partitions[i]
+                tmp[hash_cols] = tmp[hash_cols].applymap(self._hash_unicode)
+                tmp.compute()
+                path = os.path.join(os.getcwd(), "tmp_hash")
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                new_file_name = f"hashed_{filename}"
+                tmp.to_csv(f"./tmp_hash/{new_file_name}", single_file=True, mode="a")
+                del tmp
+                gc.collect()
 
-        logger.info(f"Successfully encode file {filename}")
-        return new_file_name
+            logger.info(f"Successfully encode file {filename}")
+            return new_file_name
+        except ValueError as e:
+            logger.error(e)
+            msg = "Invalid CSV, please make sure all records in the same column are the same data type"
+            raise HTTPException(status_code=400, detail=msg)
+        except Exception as e:
+            logger.error(e)
+            raise HTTPException(status_code=500, detail=e)
+
 
     def upload_to_azure(self, file_name: str):
         upload_file_path = os.path.join(os.getcwd(), "tmp_hash", file_name)

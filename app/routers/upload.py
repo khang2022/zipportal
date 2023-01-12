@@ -1,14 +1,20 @@
-from fastapi import APIRouter, Depends
-from base.validate import validate_upload_file
-from services import upload_service
+from fastapi import APIRouter, File, Depends, UploadFile
+from fastapi.security import HTTPAuthorizationCredentials
 from schemas import UploadResponse
-from typing import List
+from services import file_service
+from routers.deps import limit_file_size
+from security import get_token
 
 
 router = APIRouter()
 
 
-@router.post("/upload", response_model=List[dict])
-async def create_upload_file(uploaded_file=Depends(validate_upload_file)):
-    renamed_file = upload_service.save_file(uploaded_file)
-    return upload_service.response_file(renamed_file)
+
+@router.post(
+    "/upload",
+    response_model=UploadResponse,
+    dependencies=[Depends(limit_file_size)],
+)
+async def create_upload_file(credentials: HTTPAuthorizationCredentials = Depends(get_token), uploaded_file: UploadFile = File()):
+    renamed_file = file_service.save_file(uploaded_file)
+    return file_service.response_file(renamed_file)
